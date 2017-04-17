@@ -1073,7 +1073,7 @@ void osaRobot1394::EncoderBitsToVelocity(const vctIntVec & bits, vctDoubleVec & 
             vel[i] = 0.0;
         }
         else {
-            vel[i] = mBitsToDPositionScales[i] / (static_cast<double>(cnter)*period);
+            vel[i] = mBitsToDPositionScales[i] / (cnter*period);
         }
     }
 }
