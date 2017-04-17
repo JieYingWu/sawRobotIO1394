@@ -1065,6 +1065,7 @@ void osaRobot1394::EncoderBitsToDTime(const vctIntVec & bits, vctDoubleVec & dt)
 void osaRobot1394::EncoderBitsToVelocity(const vctIntVec & bits, vctDoubleVec & vel) const
 {
     int cnter;
+    double period = 1/3072000;
     for (size_t i = 0; i < mEncoderVelocityBits.size() && i < vel.size(); i++)
     {
         int32 cnter = (int32) mEncoderVelocityBits[i];
@@ -1072,7 +1073,7 @@ void osaRobot1394::EncoderBitsToVelocity(const vctIntVec & bits, vctDoubleVec & 
             vel[i] = 0.0;
         }
         else {
-            vel[i] = mBitsToDPositionScales[i] / static_cast<double>(cnter);
+            vel[i] = mBitsToDPositionScales[i] / (static_cast<double>(cnter)*period);
         }
     }
 }
