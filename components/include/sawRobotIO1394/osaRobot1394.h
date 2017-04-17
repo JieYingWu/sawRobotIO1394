@@ -275,8 +275,7 @@ protected:
         mPotBits,
         mEncoderPositionBits,
         mEncoderPositionBitsPrev,
-        mEncoderVelocityBits,     // latched velocity
-        mEncoderVelocityBitsNow,  // current counting velocity bits
+        mEncoderVelocityBits,     //0 in first bit means latched velocity, 1 running counter
         mEncoderDPositionBits,
         mEncoderDTimeBits;
 
