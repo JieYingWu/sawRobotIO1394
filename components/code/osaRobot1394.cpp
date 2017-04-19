@@ -402,6 +402,8 @@ void osaRobot1394::ConvertState(void)
     // Velocity computation
     // compute both
     EncoderBitsToVelocity(mEncoderVelocityBits, mEncoderVelocity);   // 1/dt
+    
+#if 0
     mEncoderVelocityDxDt.DifferenceOf(mEncoderPosition, mEncoderPositionPrev);
     mEncoderVelocityDxDt.ElementwiseDivide(mActuatorTimestamp);              // dx/dt
 
@@ -410,13 +412,15 @@ void osaRobot1394::ConvertState(void)
         if (cnter < 100)
             mEncoderVelocity[i] = mEncoderVelocityDxDt[i];
     }
-
+#endif
     if (mConfiguration.HasActuatorToJointCoupling) {
         mJointVelocity.ProductOf(mConfiguration.Coupling.ActuatorToJointPosition(),
                                  mEncoderVelocity);
     } else {
         mJointVelocity.Assign(mEncoderVelocity);
     }
+
+    mActuatorTemperature.Assign(mJointVelocity);
 
     // using iterator for efficiency and going over all actuators
     const double timeToZeroVelocity = 1.0 * cmn_s;
@@ -472,7 +476,8 @@ void osaRobot1394::ConvertState(void)
 
     // finally save previous encoder bits position
     mEncoderPositionBitsPrev.Assign(mEncoderPositionBits);
-
+    mEncoderVelocity.Assign(mEncoderVelocitySoftware);
+    
     // This needs to be reviewed and we need to provide a better mechanism to choose one way or
     // another to compute the joint velocities (used by PID and displayed in Qt widget).
 
@@ -480,6 +485,8 @@ void osaRobot1394::ConvertState(void)
     if (mConfiguration.HasActuatorToJointCoupling) {
         mJointVelocity.ProductOf(mConfiguration.Coupling.ActuatorToJointPosition(),
                                  mEncoderVelocitySoftware);
+    } else {
+        mJointVelocity.Assign(mEncoderVelocitySoftware);
     }
 
     // Effort computation
@@ -583,7 +590,7 @@ void osaRobot1394::CheckState(void)
         default:
             break;
         }
-   
+
         if (errorFound) {
             mPotsToEncodersViolationsCounter++;
         } else {
@@ -1064,16 +1071,19 @@ void osaRobot1394::EncoderBitsToDTime(const vctIntVec & bits, vctDoubleVec & dt)
 
 void osaRobot1394::EncoderBitsToVelocity(const vctIntVec & bits, vctDoubleVec & vel) const
 {
-    int cnter;
-    double period = 1/3072000;
+    double period = 1.0/3072000.0;
     for (size_t i = 0; i < mEncoderVelocityBits.size() && i < vel.size(); i++)
     {
-        int32 cnter = (int32) mEncoderVelocityBits[i];
-        if (cnter == 0) {
-            vel[i] = 0.0;
-        }
-        else {
-            vel[i] = mBitsToDPositionScales[i] / (cnter*period);
+        int cnter = mEncoderVelocityBits[i];
+        if (mIsAllBoardsFirmWareFour) {
+            if (cnter == 4194303 || cnter == -4194303) { //overflow value
+                vel[i] = 0.0;
+            }
+            else {
+                vel[i] = mBitsToDPositionScales[i] / ((double) cnter*period);
+            }
+        } else {
+            vel[i] = mBitsToDPositionScales[i] / ((double) mEncoderVelocityBits[i]);
         }
     }
 }
