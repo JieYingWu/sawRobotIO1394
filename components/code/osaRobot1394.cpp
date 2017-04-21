@@ -1074,16 +1074,17 @@ void osaRobot1394::EncoderBitsToVelocity(const vctIntVec & bits, vctDoubleVec & 
     double period = 1.0/3072000.0;
     for (size_t i = 0; i < mEncoderVelocityBits.size() && i < vel.size(); i++)
     {
-        int cnter = mEncoderVelocityBits[i];
+        int cnter = bits[i];
+
         if (mIsAllBoardsFirmWareFour) {
             if (cnter == 4194303 || cnter == -4194303) { //overflow value
                 vel[i] = 0.0;
             }
             else {
-                vel[i] = mBitsToDPositionScales[i] / ((double) cnter*period);
+                vel[i] = mBitsToPositionScales[i] / ((double) cnter*period) * 4;
             }
         } else {
-            vel[i] = mBitsToDPositionScales[i] / ((double) mEncoderVelocityBits[i]);
+            vel[i] = mBitsToPositionScales[i] / ((double) mEncoderVelocityBits[i]);
         }
     }
 }
