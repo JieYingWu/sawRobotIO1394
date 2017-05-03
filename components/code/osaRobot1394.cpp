@@ -448,9 +448,12 @@ void osaRobot1394::ConvertState(void)
         // first see if there has been any change
         const int difference = (*currentEncoder) - (*previousEncoder);
         if (difference == 0) {
-            if (*lastChangeTimestamp < timeToZeroVelocity) {
-                *velocity -= (*slope) * (*currentTimestamp);
-            } else {
+            // if (*lastChangeTimestamp < timeToZeroVelocity) {
+            //     *velocity -= (*slope) * (*currentTimestamp);
+            // } else {
+                // *velocity = 0.0;
+            // }
+            if (*lastChangeTimestamp > 0.5) { //Just above time it takes to overflow in software
                 *velocity = 0.0;
             }
             *lastChangeTimestamp += (*currentTimestamp);
