@@ -275,7 +275,7 @@ protected:
         mPotBits,
         mEncoderPositionBits,
         mEncoderPositionBitsPrev,
-        mEncoderVelocityBits,     //0 in first bit means latched velocity, 1 running counter
+        mEncoderVelocityBits,        //0 in first bit means latched velocity, 1 running counter
         mEncoderDPositionBits,
         mEncoderDTimeBits;
 
@@ -295,6 +295,7 @@ protected:
         mEncoderPosition,
         mEncoderPositionPrev,
         mEncoderVelocity,
+        mEncoderVelocityLowResBits,  //JYW: you need to fill this out
         mEncoderVelocityDxDt,
         mEncoderDPosition,
         mEncoderDTime,

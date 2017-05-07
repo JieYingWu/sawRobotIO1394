@@ -82,6 +82,7 @@ void osaRobot1394::Configure(const osaRobot1394Configuration & config)
     mEncoderPositionBits.SetSize(mNumberOfActuators);
     mEncoderPositionBitsPrev.SetSize(mNumberOfActuators);
     mEncoderVelocityBits.SetSize(mNumberOfActuators);
+    mEncoderVelocityLowResBits.SetSize(mNumberOfActuators);
     mActuatorCurrentBitsCommand.SetSize(mNumberOfActuators);
     mActuatorCurrentBitsFeedback.SetSize(mNumberOfActuators);
 
@@ -358,6 +359,7 @@ void osaRobot1394::PollState(void)
         // convert from 24 bits signed stored in 32 unsigned to 32 signed
         mEncoderPositionBits[i] = board->GetEncoderPosition(axis);
         mEncoderVelocityBits[i] = board->GetEncoderVelocity(axis);
+        mEncoderVelocityLowResBits[i] = board->GetEncoderVelocityLowRes(axis);
 
         mPotBits[i] = board->GetAnalogInput(axis);
 
