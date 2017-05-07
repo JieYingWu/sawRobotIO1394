@@ -67,7 +67,7 @@ bool mtsRobot1394::SetupStateTables(const size_t stateTableSize,
     mStateTableRead->AddData(mJointPosition, "PositionJoint");
     mStateTableRead->AddData(mPotsToEncodersError, "PotsToEncoderError");
     mStateTableRead->AddData(mEncoderVelocityBits, "VelocityEncoderRaw");
-    mStateTableRead->AddData(mEncoderVelocityLowResBits, "VelocityEncoderLowResRaw");
+    mStateTableRead->AddData(mJointVelocityLowRes, "VelocityEncoderLowRes");
     mStateTableRead->AddData(mEncoderVelocity, "Vel");
     mStateTableRead->AddData(mJointTorque, "Effortjoint");
     mStateTableRead->AddData(mPotBits, "AnalogInRaw");
@@ -219,8 +219,8 @@ void mtsRobot1394::SetupInterfaces(mtsInterfaceProvided * robotInterface,
 
     robotInterface->AddCommandReadState(*mStateTableRead, mEncoderVelocityBits,
                                         "GetVelocityRaw"); // vector[int]
-    robotInterface->AddCommandReadState(*mStateTableRead, mEncoderVelocityLowResBits,
-                                        "GetVelocityLowResRaw"); // vector[int]
+    robotInterface->AddCommandReadState(*mStateTableRead, mJointVelocityLowRes,
+                                        "GetVelocityLowRes"); // vector[double]
     robotInterface->AddCommandReadState(*mStateTableRead, mEncoderVelocity,
                                         "GetVelocity"); // vector[double]
 

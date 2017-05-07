@@ -276,6 +276,7 @@ protected:
         mEncoderPositionBits,
         mEncoderPositionBitsPrev,
         mEncoderVelocityBits,        //0 in first bit means latched velocity, 1 running counter
+        mEncoderVelocityLowResBits,  //Stepped down encoder resolution by 16 for comparison
         mEncoderDPositionBits,
         mEncoderDTimeBits;
 
@@ -295,13 +296,14 @@ protected:
         mEncoderPosition,
         mEncoderPositionPrev,
         mEncoderVelocity,
-        mEncoderVelocityLowResBits,  //JYW: you need to fill this out
+        mEncoderVelocityLowRes,  //Velocity estimated from lower resolution encoder
         mEncoderVelocityDxDt,
         mEncoderDPosition,
         mEncoderDTime,
         mEncoderVelocitySoftware,
         mJointPosition,
         mJointVelocity,
+        mJointVelocityLowRes,    //Joint vel estimated from lower res encoder
         mJointTorque,
         mActuatorCurrentCommand,
         mBrakeCurrentCommand,

@@ -96,10 +96,12 @@ void osaRobot1394::Configure(const osaRobot1394Configuration & config)
     mEncoderPosition.SetSize(mNumberOfActuators);
     mEncoderPositionPrev.SetSize(mNumberOfActuators);
     mEncoderVelocity.SetSize(mNumberOfActuators);
+    mEncoderVelocityLowRes.SetSize(mNumberOfActuators);
     mEncoderVelocityDxDt.SetSize(mNumberOfActuators);
     mEncoderVelocitySoftware.SetSize(mNumberOfActuators);
     mJointPosition.SetSize(mNumberOfJoints);
     mJointVelocity.SetSize(mNumberOfJoints);
+    mJointVelocityLowRes.SetSize(mNumberOfJoints);
     mJointTorque.SetSize(mNumberOfJoints);
     mActuatorCurrentCommand.SetSize(mNumberOfActuators);
     mActuatorEffortCommand.SetSize(mNumberOfActuators);
@@ -359,7 +361,7 @@ void osaRobot1394::PollState(void)
         // convert from 24 bits signed stored in 32 unsigned to 32 signed
         mEncoderPositionBits[i] = board->GetEncoderPosition(axis);
         mEncoderVelocityBits[i] = board->GetEncoderVelocity(axis);
-        mEncoderVelocityLowResBits[i] = board->GetEncoderVelocityLowRes(axis);
+        mEncoderVelocityLowResBits[i] = board->GetEncoderVelocityLowRes(axis)*16;
 
         mPotBits[i] = board->GetAnalogInput(axis);
 
@@ -404,7 +406,8 @@ void osaRobot1394::ConvertState(void)
     // Velocity computation
     // compute both
     EncoderBitsToVelocity(mEncoderVelocityBits, mEncoderVelocity);   // 1/dt
-    
+    EncoderBitsToVelocity(mEncoderVelocityLowResBits, mEncoderVelocityLowRes);   // 1/dt
+
 #if 0
     mEncoderVelocityDxDt.DifferenceOf(mEncoderPosition, mEncoderPositionPrev);
     mEncoderVelocityDxDt.ElementwiseDivide(mActuatorTimestamp);              // dx/dt
@@ -424,6 +427,14 @@ void osaRobot1394::ConvertState(void)
 
     mActuatorTemperature.Assign(mJointVelocity);
 
+    if (mConfiguration.HasActuatorToJointCoupling) {
+        mJointVelocityLowRes.ProductOf(mConfiguration.Coupling.ActuatorToJointPosition(),
+                                 mEncoderVelocityLowRes);
+    } else {
+        mJointVelocityLowRes.Assign(mEncoderVelocityLowRes);
+    }
+
+    
     // using iterator for efficiency and going over all actuators
     const double timeToZeroVelocity = 1.0 * cmn_s;
     const vctIntVec::const_iterator end = mEncoderPositionBits.end();
@@ -1077,7 +1088,7 @@ void osaRobot1394::EncoderBitsToDTime(const vctIntVec & bits, vctDoubleVec & dt)
 void osaRobot1394::EncoderBitsToVelocity(const vctIntVec & bits, vctDoubleVec & vel) const
 {
     double period = 1.0/3072000.0;
-    for (size_t i = 0; i < mEncoderVelocityBits.size() && i < vel.size(); i++)
+    for (size_t i = 0; i < bits.size() && i < vel.size(); i++)
     {
         int cnter = bits[i];
 
@@ -1089,7 +1100,7 @@ void osaRobot1394::EncoderBitsToVelocity(const vctIntVec & bits, vctDoubleVec & 
                 vel[i] = mBitsToPositionScales[i] / ((double) cnter*period) * 4;
             }
         } else {
-            vel[i] = mBitsToPositionScales[i] / ((double) mEncoderVelocityBits[i]);
+            vel[i] = mBitsToPositionScales[i] / ((double) bits[i]);
         }
     }
 }
