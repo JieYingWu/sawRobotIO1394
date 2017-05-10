@@ -5,7 +5,7 @@
   Author(s):  Zihan Chen, Peter Kazanzides
   Created on: 2011-06-10
 
-  (C) Copyright 2011-2015 Johns Hopkins University (JHU), All Rights Reserved.
+  (C) Copyright 2011-2017 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 
@@ -100,11 +100,7 @@ namespace sawRobotIO1394 {
         mtsStateTable::Accessor<prmPositionJointGet> * mPositionActuatorGetAccessor;
 
     public:
-        struct {
-            mtsFunctionWrite Status;
-            mtsFunctionWrite Warning;
-            mtsFunctionWrite Error;
-        } MessageEvents;
+        mtsInterfaceProvided * mInterface;
     };
 
 } // namespace sawRobotIO1394

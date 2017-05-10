@@ -19,3 +19,6 @@ add_subdirectory (current-calibration)
 
 # utility to plot velocities
 add_subdirectory (data-plot)
+
+# utility to collect data
+add_subdirectory (data-collection)

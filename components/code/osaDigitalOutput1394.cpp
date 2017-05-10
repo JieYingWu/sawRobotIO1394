@@ -56,7 +56,7 @@ void osaDigitalOutput1394::SetBoard(AmpIO * board)
 void osaDigitalOutput1394::PollState(void)
 {
     // Get the new value
-    mDigitalOutputBits =  mBoard->GetDigitalOutput();
+    mDigitalOutputBits = mBoard->GetDigitalOutput();
 
     // Use masked bit
     mValue = (mDigitalOutputBits & mBitMask);
@@ -77,7 +77,7 @@ const bool & osaDigitalOutput1394::Value(void) const {
 void osaDigitalOutput1394::SetValue(const bool & newValue)
 {
     // read from the boards
-    mDigitalOutputBits =  mBoard->GetDigitalOutput();
+    mDigitalOutputBits = mBoard->GetDigitalOutput();
     if (newValue) {
         mDigitalOutputBits |= mBitMask;
     } else {

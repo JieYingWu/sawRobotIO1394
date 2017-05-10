@@ -38,7 +38,6 @@ protected:
     std::ostream * MessageStream;             // Stream provided to the low level boards for messages, redirected to cmnLogger
 
     sawRobotIO1394::osaPort1394 * mPort;
-    bool mPortExceptionFlag;
 
     typedef std::vector<sawRobotIO1394::mtsRobot1394*> RobotsType;
     typedef RobotsType::iterator robots_iterator;

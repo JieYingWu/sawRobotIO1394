@@ -5,7 +5,7 @@
   Author(s):  Kwang Young Lee
   Created on: 2013-04-11
 
-  (C) Copyright 2013 Johns Hopkins University (JHU), All Rights Reserved.
+  (C) Copyright 2013-2017 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 
@@ -33,6 +33,7 @@ CMN_IMPLEMENT_SERVICES_DERIVED_ONEARG(mtsRobotIO1394QtWidgetFactory, mtsComponen
 
 mtsRobotIO1394QtWidgetFactory::mtsRobotIO1394QtWidgetFactory(const std::string &name):
     mtsComponent(name),
+    mButtonsWidget(0),
     BuildWidgetsCalled(false)
 {
     // This function will make the required interface to be connected with
@@ -125,7 +126,7 @@ void mtsRobotIO1394QtWidgetFactory::BuildWidgets(void)
         DigitalInputNames.resize(NumberOfDigitalInputs);
         Configuration.GetDigitalInputNames(DigitalInputNames);
 
-        mButtonsWidget = new prmQtWidgetEventButtonsComponent("Digital inputs");
+        mButtonsWidget = new prmEventButtonQtWidgetComponent("Digital inputs");
         // adapt width to number of IOs
         if (NumberOfDigitalInputs > 32) {
             mButtonsWidget->SetNumberOfColumns(6);

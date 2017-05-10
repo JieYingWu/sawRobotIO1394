@@ -328,6 +328,8 @@ protected:
         mCurrentSafetyViolationsMaximum,
         mPotsToEncodersViolationsCounter,
         mPotsToEncodersViolationsMaximum;
+
+    size_t mInvalidReadCounter;
     };
 
 } // namespace sawRobotIO1394

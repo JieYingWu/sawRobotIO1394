@@ -20,7 +20,7 @@ http://www.cisst.org/cisst/license.txt.
 #define _mtsRobotIO1394QtManager_h
 
 #include <cisstMultiTask/mtsComponent.h>
-#include <cisstParameterTypes/prmQtWidgetEventButtonsComponent.h>
+#include <cisstParameterTypes/prmEventButtonQtWidget.h>
 #include <sawRobotIO1394/mtsRobotIO1394.h>
 
 #include <QtCore>
@@ -43,13 +43,13 @@ public:
     typedef std::list<mtsRobotIO1394QtWidget *> WidgetListType;
     const WidgetListType & Widgets(void) const;
 
-    inline prmQtWidgetEventButtonsComponent * ButtonsWidget(void) {
+    inline prmEventButtonQtWidgetComponent * ButtonsWidget(void) {
         return mButtonsWidget;
     }
 
 protected:
     WidgetListType mWidgets;
-    prmQtWidgetEventButtonsComponent * mButtonsWidget;
+    prmEventButtonQtWidgetComponent * mButtonsWidget;
 
     void BuildWidgets(void);
     bool BuildWidgetsCalled;

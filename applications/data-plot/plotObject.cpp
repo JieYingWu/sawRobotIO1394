@@ -120,7 +120,7 @@ void plotObject::timerEvent(QTimerEvent * CMN_UNUSED(event))
                                     mPotDx[mActuatorIndex])));
 
     // update plot
-    mPlot->updateGL();
+    mPlot->update();
 
     // save previous state
     mPreviousEncoderPosition.Assign(mRobot->EncoderPosition());

@@ -234,7 +234,7 @@ int main(int argc, char * argv[])
         return -1;
     }
     robot = new osaRobot1394(config.Robots[0]);
-    bool brakes = false;
+    brakes = false;
     if (options.IsSet("brakes")) {
         brakes = true;
         numberOfAxis = robot->NumberOfBrakes();
@@ -332,11 +332,13 @@ int main(int argc, char * argv[])
         if (brakes) {
             xmlQueryCmdOffset = "Robot[1]/Actuator[%d]/AnalogBrake/AmpsToBits/@Offset";
             xmlQueryCmdScale  = "Robot[1]/Actuator[%d]/AnalogBrake/AmpsToBits/@Scale";
+            xmlQueryFbOffset =  "Robot[1]/Actuator[%d]/AnalogBrake/BitsToFeedbackAmps/@Offset";
         } else {
             xmlQueryCmdOffset = "Robot[1]/Actuator[%d]/Drive/AmpsToBits/@Offset";
             xmlQueryCmdScale  = "Robot[1]/Actuator[%d]/Drive/AmpsToBits/@Scale";
+            xmlQueryFbOffset =  "Robot[1]/Actuator[%d]/Drive/BitsToFeedbackAmps/@Offset";
         }
-        xmlQueryFbOffset =  "Robot[1]/Actuator[%d]/Drive/BitsToFeedbackAmps/@Offset";
+
         // query previous current offset and scales
         vctDoubleVec previousCmdOffsets(numberOfAxis, 0.0);
         vctDoubleVec previousCmdScales(numberOfAxis, 0.0);

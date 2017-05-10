@@ -5,7 +5,7 @@
   Author(s):  Zihan Chen, Anton Deguet
   Created on: 2013-02-16
 
-  (C) Copyright 2013-2014 Johns Hopkins University (JHU), All Rights Reserved.
+  (C) Copyright 2013-2017 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 
@@ -206,8 +206,23 @@ void mtsRobotIO1394QtWidget::SlotEnableAll(bool toggle)
 
 void mtsRobotIO1394QtWidget::SlotEnableDirectControl(bool toggle)
 {
+    if (toggle) {
+        int answer = QMessageBox::warning(this, tr("mtsRobotIO1394QtWidget"),
+                                          tr("In direct control mode you can potentially harm your robot.\nAre you sure you want to continue?"),
+                                          QMessageBox::No | QMessageBox::Yes);
+        if (answer == QMessageBox::No) {
+            toggle = false;
+        }
+    }
+    QCBEnableDirectControl->setChecked(toggle);
     DirectControl = toggle;
-    // if checked in DIRECT_CONTROL mode
+    // update widgets
+    QCBEnableAll->setEnabled(toggle);
+    QCBEnableAmps->setEnabled(toggle);
+    QSBWatchdogPeriod->setEnabled(toggle);
+    QPBResetEncAll->setEnabled(toggle);
+    QPBBiasEncAll->setEnabled(toggle);
+    QVWActuatorCurrentEnableEachWidget->setEnabled(toggle);
     QVWActuatorCurrentSpinBoxWidget->setEnabled(toggle);
     QVWActuatorCurrentSliderWidget->setEnabled(toggle);
     QPBResetCurrentAll->setEnabled(toggle);
@@ -482,7 +497,7 @@ void mtsRobotIO1394QtWidget::setupUi(void)
     watchdogLayout->addWidget(watchdogTitle);
     QHBoxLayout * watchdogSetLayout = new QHBoxLayout;
     {
-        QLabel * wdogLabel = new QLabel("Wdog period (ms)");
+        QLabel * wdogLabel = new QLabel("Period (ms)");
         QSBWatchdogPeriod = new QDoubleSpinBox;
         QSBWatchdogPeriod->setMaximum(340.0); // max wdog_period = 340 ms
         QSBWatchdogPeriod->setMinimum(0.0);
@@ -496,7 +511,7 @@ void mtsRobotIO1394QtWidget::setupUi(void)
     QLSafetyRelay = new QLabel("Safety relay ON");
     QLSafetyRelay->setAlignment(Qt::AlignCenter);
     watchdogLayout->addWidget(QLSafetyRelay);
-    QLWatchdog = new QLabel("Watchdog Timeout FALSE");
+    QLWatchdog = new QLabel("Timeout FALSE");
     QLWatchdog->setAlignment(Qt::AlignCenter);
     QLWatchdog->setStyleSheet("QLabel { background-color: green }");
     watchdogLayout->addWidget(QLWatchdog);
@@ -598,17 +613,17 @@ void mtsRobotIO1394QtWidget::setupUi(void)
         gridLayout->addWidget(QVRActuatorCurrentFeedbackWidget, row, 1);
         row++;
 
-        gridLayout->addWidget(new QLabel("Joint positions (deg)"), row, 0);
+        gridLayout->addWidget(new QLabel("Joint position (deg)"), row, 0);
         QVRJointPositionWidget = new vctQtWidgetDynamicVectorDoubleRead();
         gridLayout->addWidget(QVRJointPositionWidget, row, 1);
         row++;
 
-        gridLayout->addWidget(new QLabel("Actuator positions (deg)"), row, 0);
+        gridLayout->addWidget(new QLabel("Actuator position (deg)"), row, 0);
         QVRActuatorPositionWidget = new vctQtWidgetDynamicVectorDoubleRead();
         gridLayout->addWidget(QVRActuatorPositionWidget, row, 1);
         row++;
 
-        gridLayout->addWidget(new QLabel("Velocities (deg/s)"), row, 0);
+        gridLayout->addWidget(new QLabel("Actuator velocity (deg/s)"), row, 0);
         QVRActuatorVelocityWidget = new vctQtWidgetDynamicVectorDoubleRead();
         gridLayout->addWidget(QVRActuatorVelocityWidget, row, 1);
         row++;
@@ -780,11 +795,11 @@ void mtsRobotIO1394QtWidget::WatchdogStatusEventHandler(const bool & status)
 void mtsRobotIO1394QtWidget::SlotWatchdogStatus(bool status)
 {
     if (status) {
-        QLWatchdog->setText("Watchdog Timeout TRUE");
+        QLWatchdog->setText("Timeout TRUE");
         QLWatchdog->setStyleSheet("QLabel { background-color: red }");
         QLWatchdogLastTimeout->setText(QString("Last timeout: " + QTime::currentTime().toString("hh:mm:ss")));
     } else {
-        QLWatchdog->setText("Watchdog Timeout FALSE");
+        QLWatchdog->setText("Timeout FALSE");
         QLWatchdog->setStyleSheet("QLabel { background-color: green }");
     }
 }

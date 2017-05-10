@@ -50,7 +50,8 @@ osaRobot1394::osaRobot1394(const osaRobot1394Configuration & config,
     mCurrentSafetyViolationsCounter(0),
     mCurrentSafetyViolationsMaximum(maxConsecutiveCurrentSafetyViolations),
     mPotsToEncodersViolationsCounter(0),
-    mPotsToEncodersViolationsMaximum(maxConsecutivePotsToEncodersViolations)
+    mPotsToEncodersViolationsMaximum(maxConsecutivePotsToEncodersViolations),
+    mInvalidReadCounter(0)
 {
     this->Configure(config);
 }
@@ -333,16 +334,27 @@ void osaRobot1394::PollValidity(void)
     }
 
     if (!mValid) {
-        std::stringstream message;
-        message << this->Name() << ": read error on board(s) ";
-        for (unique_board_iterator board = mUniqueBoards.begin();
-             board != mUniqueBoards.end();
-             ++board) {
-            if (!board->second->ValidRead()) {
-                message << static_cast<int>(board->second->GetBoardId()) << " ";
+        if (mInvalidReadCounter == 0) {
+            mInvalidReadCounter++;
+            std::stringstream message;
+            message << this->Name() << ": port read error on board(s) ";
+            for (unique_board_iterator board = mUniqueBoards.begin();
+                 board != mUniqueBoards.end();
+                 ++board) {
+                if (!board->second->ValidRead()) {
+                    message << static_cast<int>(board->second->GetBoardId()) << " ";
+                }
+            }
+            cmnThrow(osaRuntimeError1394(message.str()));
+        } else {
+            mInvalidReadCounter++;
+            if (mInvalidReadCounter == 10000) {
+                mInvalidReadCounter = 0;
+                cmnThrow(osaRuntimeError1394(this->Name() + ": port read errors, occurred 10,000 times"));
             }
         }
-        cmnThrow(osaRuntimeError1394(message.str()));
+    } else {
+        mInvalidReadCounter = 0;
     }
 }
 
@@ -499,9 +511,6 @@ void osaRobot1394::ConvertState(void)
             mJointVelocity.Assign(mEncoderVelocitySoftware);
         }
 
-
-
-
 //     {
 //         const vctIntVec::const_iterator end = mEncoderVelocityLowResBits.end(); // last 2 are positions
 //         vctIntVec::const_iterator currentEncoder, previousEncoder;
@@ -581,9 +590,6 @@ void osaRobot1394::ConvertState(void)
 //    }
 
 
-
-
-
     // Effort computation
     ActuatorBitsToCurrent(mActuatorCurrentBitsFeedback, mActuatorCurrentFeedback);
     ActuatorCurrentToEffort(mActuatorCurrentFeedback, mActuatorEffortFeedback);
@@ -602,6 +608,11 @@ void osaRobot1394::ConvertState(void)
 
 void osaRobot1394::CheckState(void)
 {
+    // If we had a read error, all checks are pretty much useless
+    if (mInvalidReadCounter > 0) {
+        return;
+    }
+
     // Save EncoderPositionPrev
     mEncoderPositionPrev.Assign(mEncoderPosition);
 
