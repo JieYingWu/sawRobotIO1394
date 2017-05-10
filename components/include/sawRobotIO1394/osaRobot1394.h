@@ -276,7 +276,8 @@ protected:
         mEncoderPositionBits,
         mEncoderPositionBitsPrev,
         mEncoderVelocityBits,        //0 in first bit means latched velocity, 1 running counter
-        mEncoderVelocityLowResBits,  //Stepped down encoder resolution by 16 for comparison
+        mEncoderVelocityLowResBits,  //Stepped down encoder resolution by 16 for comparison, only axes 1 and 2
+        mEncoderPositionBitLowResPrev, //Only axes 3 and 4 are position
         mEncoderDPositionBits,
         mEncoderDTimeBits;
 
@@ -289,6 +290,7 @@ protected:
     vctDoubleVec
         mActuatorTimestamp,
         mActuatorTimestampChange, // cumulated time since last encoder changed
+        mActuatorTimestampChangeLowRes, // cumulated time since last encoder changed
         mVelocitySlopeToZero, // slope used to reduced velocity to zero when no encoder count change
         mBrakeTimestamp,
         mPotVoltage,
@@ -301,9 +303,11 @@ protected:
         mEncoderDPosition,
         mEncoderDTime,
         mEncoderVelocitySoftware,
+        mEncoderVelocitySoftwareLowRes,
         mJointPosition,
         mJointVelocity,
         mJointVelocityLowRes,    //Joint vel estimated from lower res encoder
+        mJointVelocitySoftwareLowRes,    //Joint vel estimated from lower res encoder in software
         mJointTorque,
         mActuatorCurrentCommand,
         mBrakeCurrentCommand,
