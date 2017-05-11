@@ -75,10 +75,17 @@ int main(int argc, char * argv[])
     size_t * allIterations = new size_t[numberOfIterations];
     double * allActuatorTimeStamps = new double[numberOfIterations];
     double * allCPUTimes = new double[numberOfIterations];
+    double * allTimesDiff = new double[numberOfIterations];
     double * allPositions = new double[numberOfIterations];
-
-
-
+    double * allFpgaVelocities = new double[numberOfIterations];
+    double * allFpgaVelocitiesLowRes = new double[numberOfIterations];
+    double * allSoftwareVelocities = new double[numberOfIterations];
+    double * allSoftwareDxDtFPGA = new double[numberOfIterations];
+    double * allSoftwareDxDtCPU = new double[numberOfIterations];
+    bool * allLatched = new bool[numberOfIterations];
+    uint * allFpgaVelocitiesRaw = new uint[numberOfIterations];
+    uint * allFpgaVelocitiesLowResRaw = new uint[numberOfIterations];
+    
     std::cout << "Loading config file ..." << std::endl;
     sawRobotIO1394::osaPort1394Configuration config;
     sawRobotIO1394::osaXML1394ConfigurePort(configFile, config);
@@ -111,7 +118,10 @@ int main(int argc, char * argv[])
 
     size_t percent = numberOfIterations / 100;
     size_t progress = 0;
-
+    double oldPos = 0.0;
+    double fpgaTime = 0.0;
+    double oldCPUTime = 0.0;
+    
     // main loop
     for (size_t iter = 0;
          iter < numberOfIterations;
@@ -122,16 +132,59 @@ int main(int argc, char * argv[])
         allIterations[iter] = iter;
 
         // CPU time
-        allCPUTimes[iter] = mtsManagerLocal::GetInstance()->GetTimeServer().GetRelativeTime();
+        const double currentCPUTime =
+            mtsManagerLocal::GetInstance()->GetTimeServer().GetRelativeTime(); 
+        allCPUTimes[iter] = currentCPUTime; 
 
         // get time from FPGA
-        allActuatorTimeStamps[iter] =
+        const double currentActuatorTimeStamp =
             robot->ActuatorTimeStamp()[actuatorIndex];
+        allActuatorTimeStamps[iter] = currentActuatorTimeStamp;
 
-        // get positions, see osaRobot1394.cpp, line ~1000
-        allPositions[iter] =
+        // Check for offset between CPU and FPGA time
+        fpgaTime = fpgaTime + currentActuatorTimeStamp;
+        allTimesDiff[iter] = currentCPUTime - fpgaTime;
+        
+        // Get positions, see osaRobot1394.cpp, line ~1000
+        const double currentEncoderPosition =
             robot->EncoderPosition()[actuatorIndex];
+        allPositions[iter] = currentEncoderPosition;
 
+        // Get velocities
+        allFpgaVelocities[iter] =
+            robot->EncoderVelocity()[actuatorIndex];
+
+        // Get low resolution FPGA velocity
+        allFpgaVelocitiesLowRes[iter] =
+            robot->EncoderVelocityLowRes()[actuatorIndex];
+
+        // Get original software velocity
+        allSoftwareVelocities[iter] =
+            robot->EncoderVelocitySoftware()[actuatorIndex];
+        
+        // Software velocity Dx/Dt
+        allSoftwareDxDtFPGA[iter] = ((currentEncoderPosition - oldPos)
+                                     / currentActuatorTimeStamp) + 0.01;
+
+        allSoftwareDxDtCPU[iter] = (currentEncoderPosition - oldPos)
+            / (currentCPUTime - oldCPUTime);
+
+        // Get whether velocity is latched or free running
+        allLatched[iter] =
+            robot->EncoderVelocityLatched()[actuatorIndex];
+
+        // Get raw velocity quadlets
+        allFpgaVelocitiesRaw[iter] =
+            robot->EncoderVelocityRaw()[actuatorIndex];
+        
+        // Get raw low res velocity quadlets
+        allFpgaVelocitiesLowResRaw[iter] =
+            robot->EncoderVelocityLowResRaw()[actuatorIndex];
+        
+        // maintain old variables
+        oldPos = currentEncoderPosition;
+        oldCPUTime = currentCPUTime;
+        
         // display progress
         progress++;
         if (progress == percent) {
@@ -156,17 +209,38 @@ int main(int argc, char * argv[])
     // header
     output << "iteration,"
            << "cpu-time,"
+           << "fpga-time,"
            << "fpga-dtime,"
-           << "encoder-pos" << std::endl;
+           << "encoder-pos,"
+           << "fpga-velocities,"
+           << "fpga-velocities-low-res,"
+           << "software-velocities,"
+           << "dx/dt-fpga,"
+           << "dx/dt-cpu,"
+           << "latched,"
+           << "fpga-raw,"
+           << "fpga-low-res-raw"
+           << std::endl;
     
     output << std::setprecision(17);
-    for (size_t iter = 0;
+    // start at 2000 since first data might have some garbage
+    for (size_t iter = 2000;
          iter < numberOfIterations;
          ++iter) {
         output << allIterations[iter] << ","
                << allCPUTimes[iter] << ","
+               << allTimesDiff[iter] << ","
                << allActuatorTimeStamps[iter] << ","
-               << allPositions[iter] << std::endl;
+               << allPositions[iter] << ","
+               << allFpgaVelocities[iter] << ","
+               << allFpgaVelocitiesLowRes[iter] << ","
+               << allSoftwareVelocities[iter] << ","
+               << allSoftwareDxDtFPGA[iter] << ","
+               << allSoftwareDxDtCPU[iter] << ","
+               << allLatched[iter] << ","
+               << allFpgaVelocitiesRaw[iter] << ","
+               << allFpgaVelocitiesLowResRaw[iter]
+               << std::endl;
     }
 
     output.close();

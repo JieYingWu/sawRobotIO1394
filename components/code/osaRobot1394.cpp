@@ -85,6 +85,7 @@ void osaRobot1394::Configure(const osaRobot1394Configuration & config)
     mEncoderPositionBitLowResPrev.SetSize(mNumberOfActuators);
     mEncoderVelocityBits.SetSize(mNumberOfActuators);
     mEncoderVelocityLowResBits.SetSize(mNumberOfActuators);
+    mEncoderLatched.SetSize(mNumberOfActuators);
     mActuatorCurrentBitsCommand.SetSize(mNumberOfActuators);
     mActuatorCurrentBitsFeedback.SetSize(mNumberOfActuators);
 
@@ -101,6 +102,8 @@ void osaRobot1394::Configure(const osaRobot1394Configuration & config)
     mEncoderPositionPrev.SetSize(mNumberOfActuators);
     mEncoderVelocity.SetSize(mNumberOfActuators);
     mEncoderVelocityLowRes.SetSize(mNumberOfActuators);
+    mEncoderVelocityRaw.SetSize(mNumberOfActuators);
+    mEncoderVelocityLowResRaw.SetSize(mNumberOfActuators);
     mEncoderVelocitySoftwareLowRes.SetSize(mNumberOfActuators);
     mEncoderVelocityDxDt.SetSize(mNumberOfActuators);
     mEncoderVelocitySoftware.SetSize(mNumberOfActuators);
@@ -378,6 +381,9 @@ void osaRobot1394::PollState(void)
         mEncoderPositionBits[i] = board->GetEncoderPosition(axis);
         mEncoderVelocityBits[i] = board->GetEncoderVelocity(axis,0);
         mEncoderVelocityLowResBits[i] = floor(board->GetEncoderVelocity(axis,1)/64);
+        mEncoderLatched[i] = board->GetIsVelocityLatched(axis,0);
+        mEncoderVelocityRaw[i] = board->GetEncoderVelocityRaw(axis,0);
+        mEncoderVelocityLowResRaw[i] = board->GetEncoderVelocityRaw(axis,1);
 
         mPotBits[i] = board->GetAnalogInput(axis);
 
@@ -498,7 +504,7 @@ void osaRobot1394::ConvertState(void)
 
         // finally save previous encoder bits position
         mEncoderPositionBitsPrev.Assign(mEncoderPositionBits);
-        mEncoderVelocity.Assign(mEncoderVelocitySoftware);
+        //        mEncoderVelocity.Assign(mEncoderVelocitySoftware);
 
         // This needs to be reviewed and we need to provide a better mechanism to choose one way or
         // another to compute the joint velocities (used by PID and displayed in Qt widget).
@@ -1101,6 +1107,22 @@ const vctDoubleVec & osaRobot1394::EncoderVelocity(void) const {
     return mEncoderVelocity;
 }
 
+const vctDoubleVec & osaRobot1394::EncoderVelocityLowRes(void) const {
+    return mEncoderVelocityLowRes;
+}
+
+const vctBoolVec & osaRobot1394::EncoderVelocityLatched(void) const {
+    return mEncoderLatched;
+}
+
+const vctIntVec & osaRobot1394::EncoderVelocityRaw(void) const {
+    return mEncoderVelocityRaw;
+}
+
+const vctIntVec & osaRobot1394::EncoderVelocityLowResRaw(void) const {
+    return mEncoderVelocityLowResRaw;
+}
+
 const vctDoubleVec & osaRobot1394::EncoderVelocitySoftware(void) const {
     return mEncoderVelocitySoftware;
 }
@@ -1183,7 +1205,7 @@ void osaRobot1394::EncoderBitsToVelocity(const vctIntVec & bits, vctDoubleVec & 
         int counter = bits[i];
 
         if (mIsAllBoardsFirmWareFour) {
-            if (counter == 4194303 || counter == -4194303) { //overflow value +/- 0x3fffff, sign set separately
+            if (counter == 0x3fffff || counter == -0x3fffff) { //overflow value +/- 0x3fffff, sign set separately
 
                 vel[i] = 0.0;
             }

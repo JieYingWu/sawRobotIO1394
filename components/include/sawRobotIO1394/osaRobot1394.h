@@ -135,7 +135,12 @@ public:
     const vctDoubleVec & BrakeTimeStamp(void) const;
     const vctDoubleVec & EncoderPosition(void) const;
     const vctDoubleVec & EncoderVelocity(void) const;
+    const vctDoubleVec & EncoderVelocityLowRes(void) const;
     const vctDoubleVec & EncoderVelocitySoftware(void) const;
+    const vctBoolVec & EncoderVelocityLatched(void) const;
+    const vctIntVec & EncoderVelocityRaw(void) const;
+    const vctIntVec & EncoderVelocityLowResRaw(void) const;
+        
     /**}**/
 
     /** \name Parameter Accessors
@@ -269,7 +274,8 @@ protected:
         mPreviousEncoderOverflow,
         mEncoderOverflow,
         mDigitalInputs,
-        mEncoderChannelsA;
+        mEncoderChannelsA,
+        mEncoderLatched;
 
     vctIntVec
         mPotBits,
@@ -285,7 +291,9 @@ protected:
         mActuatorCurrentBitsCommand,
         mBrakeCurrentBitsCommand,
         mActuatorCurrentBitsFeedback,
-        mBrakeCurrentBitsFeedback;
+        mBrakeCurrentBitsFeedback,
+        mEncoderVelocityRaw,
+        mEncoderVelocityLowResRaw;
 
     vctDoubleVec
         mActuatorTimestamp,
